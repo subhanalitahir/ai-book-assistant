@@ -3,6 +3,7 @@ import Link from "next/link";
 import React from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
 const navItems = [
   { label: "Library", href: "/" },
   { label: "Add New", href: "/books/new" },
@@ -37,6 +38,23 @@ const Navbar = () => {
                 </Link>
               );
             })}
+            <div className="flex items-center gap-2">
+              <Show when="signed-out">
+                <SignInButton>
+                  <button className="btn btn-secondary cursor-pointer">
+                    Sign in
+                  </button>
+                </SignInButton>
+                <SignUpButton>
+                  <button className="btn btn-primary cursor-pointer">
+                    Sign up
+                  </button>
+                </SignUpButton>
+              </Show>
+              <Show when="signed-in">
+                <UserButton />
+              </Show>
+            </div>
           </nav>
         </div>
       </header>

@@ -3,13 +3,20 @@ import Link from "next/link";
 import React from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
+import {
+  SignInButton,
+  SignUpButton,
+  Show,
+  UserButton,
+  useUser,
+} from "@clerk/nextjs";
 const navItems = [
   { label: "Library", href: "/" },
   { label: "Add New", href: "/books/new" },
 ];
 const Navbar = () => {
   const pathname = usePathname();
+  const { user } = useUser();
   return (
     <div>
       <header className="w-full fixed z-50 bg('--bg-primary')">
@@ -53,6 +60,11 @@ const Navbar = () => {
               </Show>
               <Show when="signed-in">
                 <UserButton />
+                {user?.firstName && (
+                  <Link href={"/subscription"} className="nav-user-name">
+                    {user.firstName}
+                  </Link>
+                )}
               </Show>
             </div>
           </nav>

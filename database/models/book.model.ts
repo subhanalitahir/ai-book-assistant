@@ -23,6 +23,8 @@ const BookSchema = new Schema<IBook>(
   },
   { timestamps: true },
 );
-const BookModel = mongoose.model<IBook>("Book", BookSchema);
+
+const BookModel =
+  mongoose.models.Book || mongoose.model<IBook>("Book", BookSchema);
 
 export default BookModel;

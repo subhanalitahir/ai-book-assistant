@@ -23,9 +23,8 @@ VoiceSessionSchema.index(
   { unique: true },
 );
 
-const VoiceSessionModel = mongoose.model<IVoiceSession>(
-  "VoiceSession",
-  VoiceSessionSchema,
-);
+const VoiceSessionModel =
+  mongoose.models.VoiceSession ||
+  mongoose.model<IVoiceSession>("VoiceSession", VoiceSessionSchema);
 
 export default VoiceSessionModel;

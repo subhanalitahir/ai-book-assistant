@@ -20,12 +20,16 @@ const BookSegmentSchema = new Schema<IBookSegment>(
 BookSegmentSchema.index({ bookId: 1, segmentIndex: 1 }, { unique: true });
 BookSegmentSchema.index(
   { bookId: 1, pageNumber: 1 },
-  { unique: true, sparse: true },
+  {
+    unique: true,
+    sparse: true,
+    partialFilterExpression: { pageNumber: { $type: "number" } },
+  },
 );
 BookSegmentSchema.index({ bookId: 1, content: "text" });
-const BookSegmentModel = mongoose.model<IBookSegment>(
-  "BookSegment",
-  BookSegmentSchema,
-);
+
+const BookSegmentModel =
+  mongoose.models.BookSegment ||
+  mongoose.model<IBookSegment>("BookSegment", BookSegmentSchema);
 
 export default BookSegmentModel;

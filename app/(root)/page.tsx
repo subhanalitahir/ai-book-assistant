@@ -1,11 +1,21 @@
 import React from "react";
 import Image from "next/image";
+import { auth } from "@clerk/nextjs/server";
 import { sampleBooks } from "@/lib/constants";
 import BookCard from "@/components/BookCard";
 import { getAllBooks } from "@/lib/actions/book.actions";
 
 const Home = async () => {
-  const booksResult = await getAllBooks();
+  const { userId } = await auth();
+  const booksResult = userId
+    ? await getAllBooks(userId)
+    : { success: false, error: "No authenticated user" };
+
+  const books =
+    booksResult.success && Array.isArray(booksResult.data)
+      ? booksResult.data
+      : sampleBooks;
+
   return (
     <main className="wrapper container pt-[110px]">
       <section className="library-hero-card mb-10">
@@ -59,7 +69,7 @@ const Home = async () => {
         </div>
       </section>
       <div className="library-books-grid">
-        {sampleBooks.map((book) => (
+        {books.map((book) => (
           <BookCard
             key={book._id}
             title={book.title}

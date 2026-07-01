@@ -11,6 +11,18 @@ import {
 import Book from "@/database/models/book.model";
 import BookSegment from "@/database/models/bookSegment.model";
 import { put } from "@vercel/blob";
+
+export const getAllBooks = async (clerkId: string) => {
+  try {
+    await connectToDatabase();
+    const books = await Book.find({ clerkId }).sort({ createdAt: -1 }).lean();
+    return { success: true, data: serializeData(books) };
+  } catch (error) {
+    console.error("Error fetching books:", error);
+    return { success: false, error: "Failed to fetch books" };
+  }
+};
+
 export const checkBookExists = async (title: string) => {
   try {
     await connectToDatabase();

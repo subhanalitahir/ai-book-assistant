@@ -2,8 +2,10 @@ import React from "react";
 import Image from "next/image";
 import { sampleBooks } from "@/lib/constants";
 import BookCard from "@/components/BookCard";
+import { getAllBooks } from "@/lib/actions/book.actions";
 
-const Home = () => {
+const Home = async () => {
+  const booksResult = await getAllBooks();
   return (
     <main className="wrapper container pt-[110px]">
       <section className="library-hero-card mb-10">

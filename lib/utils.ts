@@ -61,7 +61,9 @@ export const buildBookSegments = ({
         wordCount: content.trim().split(/\s+/).length,
       };
     })
-    .filter((segment): segment is NonNullable<typeof segment> => Boolean(segment));
+    .filter((segment): segment is NonNullable<typeof segment> =>
+      Boolean(segment),
+    );
 };
 
 export const splitIntoSegments = (

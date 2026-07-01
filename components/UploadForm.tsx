@@ -9,8 +9,7 @@ import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import {
   checkBookExists,
-  createBook,
-  saveBookSegments,
+  createBookWithSegments,
   uploadBookAsset,
 } from "@/lib/actions/book.actions";
 import { useRouter } from "next/navigation";
@@ -158,37 +157,33 @@ const UploadForm: React.FC = () => {
         coverUrl = uploadedCoverBlob.url;
       }
 
-      const book = await createBook({
-        clerkId: userId,
-        title: data.title,
-        author: data.author,
-        persona: data.voiceId,
-        fileURL: uploadedPdfBlob.url,
-        fileBlobKey: uploadedPdfBlob.pathname,
-        coverURL: coverUrl,
-        fileSize: pdfFile.size,
-      });
-
-      if (!book.success || !book.data) throw new Error("Failed to create book");
-      if (book.alreadyExists) {
-        toast.info("Book with same title already exists.");
-        reset();
-        router.push(`/book/${book.data.slug}`);
-        return;
-      }
-
-      const segments = await saveBookSegments(
-        book.data._id,
-        userId,
+      const result = await createBookWithSegments(
+        {
+          clerkId: userId,
+          title: data.title,
+          author: data.author,
+          persona: data.voiceId,
+          fileURL: uploadedPdfBlob.url,
+          fileBlobKey: uploadedPdfBlob.pathname,
+          coverURL: coverUrl,
+          fileSize: pdfFile.size,
+        },
         parsedPDF.content,
       );
-      if (!segments?.success) {
-        throw new Error(segments?.error || "Failed to save book segments");
+
+      if (!result.success || !result.data) {
+        throw new Error(result.error || "Failed to create book");
+      }
+      if (result.alreadyExists) {
+        toast.info("Book with same title already exists.");
+        reset();
+        router.push(`/book/${result.data.book.slug}`);
+        return;
       }
 
       toast.success("Book uploaded successfully!");
       reset();
-      router.push(`/book/${book.data.slug}`);
+      router.push(`/book/${result.data.book.slug}`);
     } catch (error) {
       console.error("Error submitting form:", error);
       const message =

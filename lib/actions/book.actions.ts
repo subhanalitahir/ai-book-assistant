@@ -1,7 +1,13 @@
 "use server";
+import mongoose from "mongoose";
 import { connectToDatabase } from "@/database/mongoose";
 import { CreateBook, TextSegment } from "@/types";
-import { generateSlug, sanitizeTextForStorage, serializeData } from "../utils";
+import {
+  buildBookSegments,
+  generateSlug,
+  sanitizeTextForStorage,
+  serializeData,
+} from "../utils";
 import Book from "@/database/models/book.model";
 import BookSegment from "@/database/models/bookSegment.model";
 import { put } from "@vercel/blob";
@@ -40,6 +46,87 @@ export const createBook = async (data: CreateBook) => {
   } catch (error) {
     console.log("Error creating book:", error);
     return { success: false, error: "Failed to create book" };
+  }
+};
+
+export const createBookWithSegments = async (
+  data: CreateBook,
+  segments: TextSegment[],
+) => {
+  try {
+    await connectToDatabase();
+
+    if (!Array.isArray(segments) || segments.length === 0) {
+      return {
+        success: false,
+        error: "Segments array is required and must not be empty.",
+      };
+    }
+
+    const slug = generateSlug(data.title);
+    const existingBook = await Book.findOne({ slug }).lean();
+    if (existingBook) {
+      return {
+        success: true,
+        data: {
+          book: serializeData(existingBook),
+          segments: [],
+        },
+        alreadyExists: true,
+      };
+    }
+
+    const session = await mongoose.startSession();
+    let createdBook: typeof Book | null = null;
+    let createdSegments: Array<Record<string, unknown>> = [];
+
+    try {
+      await session.withTransaction(async () => {
+        const book = new Book({ ...data, slug, totalSegments: 0 });
+        await book.save({ session });
+
+        const sanitizedSegments = buildBookSegments({
+          clerkId: data.clerkId,
+          bookId: book._id.toString(),
+          segments,
+        });
+
+        if (sanitizedSegments.length === 0) {
+          book.totalSegments = 0;
+          await book.save({ session });
+          createdBook = book;
+          return;
+        }
+
+        createdSegments = await BookSegment.insertMany(sanitizedSegments, {
+          session,
+          ordered: true,
+        });
+
+        book.totalSegments = createdSegments.length;
+        await book.save({ session });
+        createdBook = book;
+      });
+
+      return {
+        success: true,
+        data: {
+          book: serializeData(createdBook),
+          segments: serializeData(createdSegments),
+        },
+      };
+    } finally {
+      await session.endSession();
+    }
+  } catch (error) {
+    console.error("Error creating book with segments:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to create book and segments",
+    };
   }
 };
 
@@ -85,15 +172,22 @@ export const saveBookSegments = async (
     await connectToDatabase();
     console.log("Saving book segments:", segments.length);
     const sanitizedSegments = segments
-      .map((segment) => {
-        const content = sanitizeTextForStorage(segment.text);
+      .map((segment, index) => {
+        const content = sanitizeTextForStorage(segment.text || "");
+        const segmentIndex =
+          typeof segment.segmentIndex === "number"
+            ? segment.segmentIndex
+            : index;
+        const pageNumber =
+          typeof segment.pageNumber === "number" ? segment.pageNumber : index;
+
         return {
           clerkId,
           bookId,
           content,
-          segmentIndex: segment.segmentIndex,
-          pageNumber: segment.pageNumber,
-          wordCount: content ? content.split(/\s+/).length : 0,
+          segmentIndex,
+          pageNumber,
+          wordCount: content ? content.trim().split(/\s+/).length : 0,
         };
       })
       .filter((segment) => segment.content.length > 0);

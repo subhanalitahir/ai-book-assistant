@@ -35,6 +35,35 @@ export const sanitizeTextForStorage = (text: string): string => {
     .trim();
 };
 
+export const buildBookSegments = ({
+  clerkId,
+  bookId,
+  segments,
+}: {
+  clerkId: string;
+  bookId: string;
+  segments: TextSegment[];
+}) => {
+  return segments
+    .map((segment, index) => {
+      const content = sanitizeTextForStorage(segment.text || "");
+
+      if (!content) {
+        return null;
+      }
+
+      return {
+        clerkId,
+        bookId,
+        content,
+        segmentIndex: index,
+        pageNumber: index,
+        wordCount: content.trim().split(/\s+/).length,
+      };
+    })
+    .filter((segment): segment is NonNullable<typeof segment> => Boolean(segment));
+};
+
 export const splitIntoSegments = (
   text: string,
   segmentSize: number = 500, // Maximum words per segment

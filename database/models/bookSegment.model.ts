@@ -12,20 +12,13 @@ const BookSegmentSchema = new Schema<IBookSegment>(
     },
     content: { type: String, required: true },
     segmentIndex: { type: Number, required: true, index: true },
-    pageNumber: { type: Number },
+    pageNumber: { type: Number, required: true, min: 0 },
     wordCount: { type: Number, required: true },
   },
   { timestamps: true },
 );
 BookSegmentSchema.index({ bookId: 1, segmentIndex: 1 }, { unique: true });
-BookSegmentSchema.index(
-  { bookId: 1, pageNumber: 1 },
-  {
-    unique: true,
-    sparse: true,
-    partialFilterExpression: { pageNumber: { $type: "number" } },
-  },
-);
+BookSegmentSchema.index({ bookId: 1, pageNumber: 1 }, { unique: true });
 BookSegmentSchema.index({ bookId: 1, content: "text" });
 
 const BookSegmentModel =

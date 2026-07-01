@@ -31,7 +31,7 @@ export interface IBookSegment extends Document {
   bookId: Types.ObjectId;
   content: string;
   segmentIndex: number;
-  pageNumber?: number;
+  pageNumber: number;
   wordCount: number;
   createdAt: Date;
   updatedAt: Date;

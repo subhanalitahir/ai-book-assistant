@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { getBookBySlug } from "@/lib/actions/book.actions";
-import { ChevronLeft, VolumeX } from "lucide-react";
+import { ChevronLeft, VolumeX, Mic } from "lucide-react";
 
 interface BookDetailsPageProps {
   params: Promise<{
@@ -64,7 +64,7 @@ export default async function BookDetailsPage({
                 aria-label="Start voice chat"
                 type="button"
               >
-                <VolumeX className="w-6 h-6 text-[#212a3b]" />
+                <Mic className="w-6 h-6 text-[#212a3b]" />
               </button>
             </div>
           </div>
@@ -105,7 +105,7 @@ export default async function BookDetailsPage({
         {/* Transcript Area */}
         <div className="transcript-container w-full min-h-150">
           <div className="transcript-empty">
-            <VolumeX className="w-12 h-12 text-[#3d485e] mx-auto mb-4" />
+            <Mic className="w-12 h-12 text-[#3d485e] mx-auto mb-4" />
             <p className="transcript-empty-text">No conversation yet</p>
             <p className="transcript-empty-hint">
               Click the mic button above to start talking

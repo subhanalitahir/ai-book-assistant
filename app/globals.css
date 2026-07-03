@@ -891,6 +891,22 @@ button[data-variant="unstyled"] *,
   background-color: white !important;
 }
 
+/* Blinking cursor animation for streaming messages */
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-blink {
+  animation: blink 1s infinite;
+}
+
 /* All buttons */
 .clerk-pricing-table-wrapper button {
   height: 3rem !important;

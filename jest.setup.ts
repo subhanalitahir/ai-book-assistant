@@ -1,15 +1,15 @@
-import '@testing-library/jest-dom/extend-expect';
+import "@testing-library/jest-dom/extend-expect";
 
 // Basic mocks for next/image and next/navigation
-jest.mock('next/image', () => ({
+jest.mock("next/image", () => ({
   __esModule: true,
   default: (props: any) => {
     // eslint-disable-next-line jsx-a11y/alt-text
-    return require('react').createElement('img', props);
+    return require("react").createElement("img", props);
   },
 }));
 
-jest.mock('next/navigation', () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 
@@ -17,8 +17,8 @@ jest.mock('next/navigation', () => ({
 const originalError = console.error;
 beforeAll(() => {
   console.error = (...args: any[]) => {
-    const message = args[0] || '';
-    if (typeof message === 'string' && message.includes('Warning:')) {
+    const message = args[0] || "";
+    if (typeof message === "string" && message.includes("Warning:")) {
       return;
     }
     originalError(...args);

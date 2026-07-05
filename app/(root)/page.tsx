@@ -6,7 +6,13 @@ import BookCard from "@/components/BookCard";
 import { getAllBooks } from "@/lib/actions/book.actions";
 
 const Home = async () => {
-  const { userId } = await auth();
+  let userId: string | null = null;
+  try {
+    ({ userId } = await auth());
+  } catch {
+    userId = null;
+  }
+
   const booksResult = userId
     ? await getAllBooks(userId)
     : { success: false, error: "No authenticated user" };

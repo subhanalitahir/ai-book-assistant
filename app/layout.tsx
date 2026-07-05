@@ -34,7 +34,9 @@ export default function RootLayout({
       className={`${ibmPlexSerif.variable} ${monaSans.variable} h-full relative font-sans antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ClerkProvider>
+        <ClerkProvider
+          publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!}
+        >
           <Navbar />
           {children}
           <Toaster />

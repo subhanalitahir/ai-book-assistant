@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import "@testing-library/jest-dom/extend-expect";
 
 // Basic mocks for next/image and next/navigation

@@ -63,6 +63,20 @@ describe("useVapi hook", () => {
     });
   });
 
+  it("continues starting the conversation when session persistence fails", async () => {
+    (startVoiceSession as jest.Mock).mockRejectedValue(
+      new Error("MongoDB unavailable"),
+    );
+    render(<TestComponent book={SampleBook} />);
+
+    await userEvent.click(screen.getByText("start"));
+
+    await waitFor(() => {
+      expect(mockStart).toHaveBeenCalled();
+      expect(screen.getByText(/status: starting/i)).toBeInTheDocument();
+    });
+  });
+
   it("handles startVoiceSession returning failure", async () => {
     (startVoiceSession as jest.Mock).mockResolvedValue({
       success: false,
@@ -180,7 +194,7 @@ describe("useVapi hook", () => {
     );
   });
 
-  it("does not start if user not logged in", async () => {
+  it("uses a local fallback identity when Clerk auth is unavailable", async () => {
     jest
       .mocked(require("@clerk/nextjs").useAuth)
       .mockImplementation(() => ({ userId: null }));
@@ -196,6 +210,7 @@ describe("useVapi hook", () => {
       await result.current.start();
     });
 
-    expect(result.current.limitError).toBeTruthy();
+    expect(result.current.limitError).toBeNull();
+    expect(startMock).toHaveBeenCalled();
   });
 });

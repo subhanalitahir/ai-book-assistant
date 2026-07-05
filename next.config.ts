@@ -1,13 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "covers.openlibrary.org" },
       { protocol: "https", hostname: "*" },
     ],
   },
+  transpilePackages: ["@clerk/nextjs", "@clerk/shared", "@clerk/themes"],
   experimental: {
     serverActions: {
       bodySizeLimit: "100mb",

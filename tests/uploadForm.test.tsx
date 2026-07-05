@@ -111,7 +111,7 @@ describe("UploadForm", () => {
       });
     createBookWithSegments.mockResolvedValue({
       success: true,
-      data: { book: { slug: "test-book" } },
+      data: { book: { _id: "507f1f77bcf86cd799439011", slug: "test-book" } },
     });
 
     // mock fetch used for parsedPDF.cover

@@ -88,7 +88,7 @@ const UploadForm: React.FC = () => {
       if (existsCheck.exists && existsCheck.book) {
         toast.info("Book with same title already exists.");
         reset();
-        router.push(`/book/${existsCheck.book.slug}`);
+        router.push(`/books/${existsCheck.book._id}`);
         return;
       }
 
@@ -177,13 +177,13 @@ const UploadForm: React.FC = () => {
       if (result.alreadyExists) {
         toast.info("Book with same title already exists.");
         reset();
-        router.push(`/book/${result.data.book.slug}`);
+        router.push(`/books/${result.data.book._id}`);
         return;
       }
 
       toast.success("Book uploaded successfully!");
       reset();
-      router.push(`/book/${result.data.book.slug}`);
+      router.push(`/books/${result.data.book._id}`);
     } catch (error) {
       console.error("Error submitting form:", error);
       const message =

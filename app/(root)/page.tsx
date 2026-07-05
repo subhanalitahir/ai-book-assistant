@@ -82,7 +82,7 @@ const Home = async () => {
               title={book.title}
               author={book.author}
               coverURL={book.coverURL}
-              slug={book.slug}
+              bookId={book._id}
             />
           ))}
         </div>

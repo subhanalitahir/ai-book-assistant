@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { auth } from "@clerk/nextjs/server";
-import { sampleBooks } from "@/lib/constants";
+import { BookOpen } from "lucide-react";
 import BookCard from "@/components/BookCard";
 import { getAllBooks } from "@/lib/actions/book.actions";
 
@@ -20,7 +20,7 @@ const Home = async () => {
   const books =
     booksResult.success && Array.isArray(booksResult.data)
       ? booksResult.data
-      : sampleBooks;
+      : [];
 
   return (
     <main className="wrapper container pt-[110px]">
@@ -74,17 +74,28 @@ const Home = async () => {
           </aside>
         </div>
       </section>
-      <div className="library-books-grid">
-        {books.map((book) => (
-          <BookCard
-            key={book._id}
-            title={book.title}
-            author={book.author}
-            coverURL={book.coverURL}
-            slug={book.slug}
-          />
-        ))}
-      </div>
+      {books.length > 0 ? (
+        <div className="library-books-grid">
+          {books.map((book) => (
+            <BookCard
+              key={book._id}
+              title={book.title}
+              author={book.author}
+              coverURL={book.coverURL}
+              slug={book.slug}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center gap-4 rounded-[28px] border border-dashed border-[rgba(33,42,59,0.16)] bg-[rgba(255,255,255,0.7)] px-6 py-16 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.08)]">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--accent-light)] text-[var(--accent-warm)]">
+            <BookOpen className="h-10 w-10" aria-hidden="true" />
+          </div>
+          <p className="max-w-md text-lg font-medium text-[var(--text-primary)]">
+            No book added please add a book
+          </p>
+        </div>
+      )}
     </main>
   );
 };

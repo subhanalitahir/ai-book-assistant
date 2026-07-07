@@ -244,3 +244,68 @@ export const saveBookSegments = async (
     };
   }
 };
+
+type SearchBookSegmentsResult =
+  | { success: true; result: string }
+  | { success: false; error: string };
+
+export const searchBookSegments = async (
+  bookId: string,
+  query: string,
+  segmentCount = 5,
+): Promise<SearchBookSegmentsResult> => {
+  const normalizedBookId = bookId.trim();
+  const normalizedQuery = query.trim();
+  const normalizedSegmentCount = Number.isFinite(segmentCount)
+    ? Math.min(Math.max(Math.trunc(segmentCount), 1), 10)
+    : 5;
+
+  if (!mongoose.isValidObjectId(normalizedBookId) || !normalizedQuery) {
+    return {
+      success: true,
+      result: "no information found about this topic",
+    };
+  }
+
+  try {
+    await connectToDatabase();
+
+    const segments = await BookSegment.find(
+      {
+        bookId: normalizedBookId,
+        $text: { $search: normalizedQuery },
+      },
+      {
+        content: 1,
+        segmentIndex: 1,
+        score: { $meta: "textScore" },
+      },
+    )
+      .sort({ score: { $meta: "textScore" }, segmentIndex: 1 })
+      .limit(normalizedSegmentCount)
+      .lean<Array<{ content: string; segmentIndex: number }>>();
+
+    if (!segments.length) {
+      return {
+        success: true,
+        result: "no information found about this topic",
+      };
+    }
+
+    return {
+      success: true,
+      result: segments
+        .map((segment) => `Segment ${segment.segmentIndex + 1}: ${segment.content}`)
+        .join("\n"),
+    };
+  } catch (error) {
+    console.error("Error searching book segments:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to search book segments",
+    };
+  }
+};

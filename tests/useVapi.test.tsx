@@ -1,5 +1,11 @@
 import React from "react";
-import { act, render, renderHook, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 const mockUseAuth = jest.fn(() => ({ userId: "user_123" }));
@@ -10,19 +16,23 @@ const startMock = jest.fn();
 const stopMock = jest.fn();
 const listeners = new Map<string, Array<(payload?: unknown) => void>>();
 
-const onMock = jest.fn((event: string, handler: (payload?: unknown) => void) => {
-  const handlers = listeners.get(event) ?? [];
-  handlers.push(handler);
-  listeners.set(event, handlers);
-});
+const onMock = jest.fn(
+  (event: string, handler: (payload?: unknown) => void) => {
+    const handlers = listeners.get(event) ?? [];
+    handlers.push(handler);
+    listeners.set(event, handlers);
+  },
+);
 
-const offMock = jest.fn((event: string, handler: (payload?: unknown) => void) => {
-  const handlers = listeners.get(event) ?? [];
-  listeners.set(
-    event,
-    handlers.filter((registeredHandler) => registeredHandler !== handler),
-  );
-});
+const offMock = jest.fn(
+  (event: string, handler: (payload?: unknown) => void) => {
+    const handlers = listeners.get(event) ?? [];
+    listeners.set(
+      event,
+      handlers.filter((registeredHandler) => registeredHandler !== handler),
+    );
+  },
+);
 
 const emitVapiEvent = (event: string, payload?: unknown) => {
   for (const handler of listeners.get(event) ?? []) {
@@ -76,7 +86,10 @@ function TestComponent({ book }: { book: any }) {
       <div>error: {limitError}</div>
       <div>active: {String(isActive)}</div>
       <div>
-        messages: {messages.map((message) => `${message.role}:${message.content}`).join("|")}
+        messages:{" "}
+        {messages
+          .map((message) => `${message.role}:${message.content}`)
+          .join("|")}
       </div>
       <div>current-assistant: {currentMessage}</div>
       <div>current-user: {currentUserMessage}</div>
@@ -195,7 +208,9 @@ describe("useVapi hook", () => {
       });
     });
 
-    expect(screen.getByText(/current-user:/i)).toHaveTextContent("current-user:");
+    expect(screen.getByText(/current-user:/i)).toHaveTextContent(
+      "current-user:",
+    );
     expect(screen.getByText(/status: thinking/i)).toBeInTheDocument();
     expect(screen.getByText(/messages: user:I started/i)).toBeInTheDocument();
 
@@ -208,7 +223,9 @@ describe("useVapi hook", () => {
       });
     });
 
-    expect(screen.getByText(/current-assistant: Working on it/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/current-assistant: Working on it/i),
+    ).toBeInTheDocument();
 
     act(() => {
       emitVapiEvent("message", {

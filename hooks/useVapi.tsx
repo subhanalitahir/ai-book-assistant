@@ -65,7 +65,10 @@ const getTranscriptType = (event: VapiMessageEvent): TranscriptType | null => {
     return event.transcriptType;
   }
 
-  if (event.type === "user-transcription" || event.type === "assistant-message") {
+  if (
+    event.type === "user-transcription" ||
+    event.type === "assistant-message"
+  ) {
     return "final";
   }
 

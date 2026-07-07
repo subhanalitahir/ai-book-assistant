@@ -295,7 +295,10 @@ export const searchBookSegments = async (
     return {
       success: true,
       result: segments
-        .map((segment) => `Segment ${segment.segmentIndex + 1}: ${segment.content}`)
+        .map(
+          (segment) =>
+            `Segment ${segment.segmentIndex + 1}: ${segment.content}`,
+        )
         .join("\n"),
     };
   } catch (error) {

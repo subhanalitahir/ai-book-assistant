@@ -104,7 +104,9 @@ export async function POST(request: Request) {
   }
 
   const calls = getCalls(body);
-  const searchCalls = calls.filter((call) => getCallName(call) === "searchBook");
+  const searchCalls = calls.filter(
+    (call) => getCallName(call) === "searchBook",
+  );
 
   if (searchCalls.length === 0) {
     return NextResponse.json({ result: NO_INFORMATION });
@@ -113,11 +115,17 @@ export async function POST(request: Request) {
   const results = await Promise.all(
     searchCalls.map(async (call) => {
       const parameters = getParameters(call);
-      const bookId = typeof parameters.bookId === "string" ? parameters.bookId : "";
-      const query = typeof parameters.query === "string" ? parameters.query : "";
+      const bookId =
+        typeof parameters.bookId === "string" ? parameters.bookId : "";
+      const query =
+        typeof parameters.query === "string" ? parameters.query : "";
       const segmentCount = resolveSegmentCount(parameters);
 
-      const searchResult = await searchBookSegments(bookId, query, segmentCount);
+      const searchResult = await searchBookSegments(
+        bookId,
+        query,
+        segmentCount,
+      );
 
       return {
         name: "searchBook",

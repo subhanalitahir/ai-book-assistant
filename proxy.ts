@@ -4,9 +4,12 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 const clerkProxy = clerkMiddleware();
 
 export default async function proxy(req: NextRequest, evt: NextFetchEvent) {
-  // Clerk dev-browser handshake can rewrite requests and fail in local/headless flows.
-  // Skip middleware in development so app routes remain reachable.
-  if (process.env.NODE_ENV === "development") {
+  // Keep Clerk active by default so server components can resolve auth() on local routes.
+  // Opt out only when the local dev-browser workaround is explicitly needed.
+  if (
+    process.env.NODE_ENV === "development" &&
+    process.env.CLERK_SKIP_PROXY_IN_DEV === "true"
+  ) {
     return NextResponse.next();
   }
 

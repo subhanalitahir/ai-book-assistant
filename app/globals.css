@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -175,6 +174,24 @@
 }
 
 @layer utilities {
+  /* Animation utilities (replacements for tw-animate-css) */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+  @keyframes pulse { 50% { opacity: .5; } }
+  @keyframes blink { 0%, 50% { opacity: 0; } 51%, 100% { opacity: 1; } }
+  @keyframes pin { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideInFromBottom2 { from { transform: translateY(0.75rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .animate-spin { animation: spin 1s linear infinite; }
+  .animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
+  .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  .animate-blink { animation: blink 1s steps(2, start) infinite; }
+  .animate-pin { animation: pin 1s linear infinite; }
+  .animate-in { animation-duration: var(--animate-in-duration, 300ms); animation-timing-function: var(--animate-in-timing-function, ease); animation-fill-mode: both; }
+  .fade-in { animation-name: fadeIn; }
+  .slide-in-from-bottom-2 { animation-name: slideInFromBottom2; }
+
   .wrapper {
     @apply max-w-7xl px-5 mx-auto w-full;
   }
@@ -583,7 +600,7 @@
     }
   }
   .transcript-message {
-    @apply animate-in fade-in slide-in-from-bottom-2 duration-300;
+    animation: fadeIn var(--animate-in-duration, 300ms) var(--animate-in-timing-function, ease) both, slideInFromBottom2 var(--animate-in-duration, 300ms) var(--animate-in-timing-function, ease) both;
   }
   .transcript-message-user {
     @apply flex justify-end;

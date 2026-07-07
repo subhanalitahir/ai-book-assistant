@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 
 // Basic mocks for next/image and next/navigation
 jest.mock("next/image", () => ({

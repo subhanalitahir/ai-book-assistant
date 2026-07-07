@@ -129,15 +129,19 @@ export const formatDuration = (seconds: number): string => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
+const PDF_WORKER_SRC =
+  process.env.NEXT_PUBLIC_PDFJS_WORKER_SRC ??
+  "https://unpkg.com/pdfjs-dist@6.1.200/build/pdf.worker.min.mjs";
+
+let pdfWorkerConfigured = false;
+
 export async function parsePDFFile(file: File) {
   try {
     const pdfjsLib = await import("pdfjs-dist");
 
-    if (typeof window !== "undefined") {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-        "pdfjs-dist/build/pdf.worker.min.mjs",
-        import.meta.url,
-      ).toString();
+    if (typeof window !== "undefined" && !pdfWorkerConfigured) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER_SRC;
+      pdfWorkerConfigured = true;
     }
 
     // Read file as array buffer

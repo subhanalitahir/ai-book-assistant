@@ -81,8 +81,10 @@ export interface BookCardProps {
   bookId: string;
 }
 
+export type TranscriptRole = "user" | "assistant";
+
 export interface Messages {
-  role: string;
+  role: TranscriptRole;
   content: string;
 }
 

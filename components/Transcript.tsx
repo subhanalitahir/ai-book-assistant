@@ -40,16 +40,12 @@ export default function Transcript({
 
   return (
     <div className="flex flex-col gap-4 p-4 h-full overflow-y-auto">
-      {/* Render all previous messages */}
       {messages.map((msg, index) => {
         const isAssistant = msg.role.toLowerCase() === "assistant";
-        const isLastMessage = index === messages.length - 1;
-        const hasStreamingContent =
-          isLastMessage && (currentMessage || currentUserMessage);
 
         return (
           <div
-            key={index}
+            key={`${msg.role}-${index}-${msg.content}`}
             className={cn(
               "flex",
               isAssistant ? "justify-start" : "justify-end",
@@ -63,25 +59,18 @@ export default function Transcript({
                   : "bg-[#663820] text-white rounded-br-none",
               )}
             >
-              <p className="text-sm md:text-base whitespace-pre-wrap break-words">
+              <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
                 {msg.content}
-                {hasStreamingContent && isAssistant && currentMessage && (
-                  <span className="animate-blink">|</span>
-                )}
-                {hasStreamingContent && !isAssistant && currentUserMessage && (
-                  <span className="animate-blink">|</span>
-                )}
               </p>
             </div>
           </div>
         );
       })}
 
-      {/* Render streaming user message if exists */}
       {currentUserMessage && (
         <div className="flex justify-end">
           <div className="max-w-[80%] px-4 py-3 rounded-lg bg-[#663820] text-white rounded-br-none">
-            <p className="text-sm md:text-base whitespace-pre-wrap break-words">
+            <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
               {currentUserMessage}
               <span className="animate-blink">|</span>
             </p>
@@ -89,11 +78,10 @@ export default function Transcript({
         </div>
       )}
 
-      {/* Render streaming AI message if exists */}
-      {currentMessage && !currentUserMessage && (
+      {currentMessage && (
         <div className="flex justify-start">
           <div className="max-w-[80%] px-4 py-3 rounded-lg bg-[#f3e4c7] text-[#212a3b] rounded-bl-none">
-            <p className="text-sm md:text-base whitespace-pre-wrap break-words">
+            <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
               {currentMessage}
               <span className="animate-blink">|</span>
             </p>
@@ -101,7 +89,6 @@ export default function Transcript({
         </div>
       )}
 
-      {/* Scroll anchor */}
       <div ref={endRef} />
     </div>
   );

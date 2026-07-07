@@ -5,14 +5,15 @@ import { Mic, MicOff, AlertCircle, Loader } from "lucide-react";
 import Image from "next/image";
 import { useMemo } from "react";
 import { formatDuration } from "@/lib/utils";
+import Transcript from "@/components/Transcript";
 
 const VapiControls = ({ book }: { book: IBook }) => {
   const {
     status,
     isActive,
-    message,
+    messages,
     currentMessage,
-    currentUserMessages,
+    currentUserMessage,
     duration,
     limitError,
     start,
@@ -151,50 +152,11 @@ const VapiControls = ({ book }: { book: IBook }) => {
 
       {/* Transcript Area */}
       <div className="transcript-container w-full min-h-150 bg-slate-50 rounded-lg p-4 border border-slate-200">
-        {currentUserMessages.length === 0 && !message && !currentMessage ? (
-          <div className="transcript-empty text-center py-12">
-            <Mic className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <p className="transcript-empty-text text-slate-600 font-medium">
-              No conversation yet
-            </p>
-            <p className="transcript-empty-hint text-slate-500">
-              Click the mic button above to start talking
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3 max-h-96 overflow-y-auto">
-            {/* Current user message being spoken */}
-            {currentMessage && (
-              <div className="flex justify-end">
-                <div className="bg-blue-500 text-white px-4 py-2 rounded-lg max-w-xs">
-                  <p className="text-sm italic text-blue-100">You:</p>
-                  <p className="text-sm">{currentMessage}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Assistant response */}
-            {message && (
-              <div className="flex justify-start">
-                <div className="bg-slate-200 text-slate-900 px-4 py-2 rounded-lg max-w-xs">
-                  <p className="text-sm font-medium text-slate-700">
-                    Assistant:
-                  </p>
-                  <p className="text-sm">{message}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Previous messages */}
-            {currentUserMessages.map((msg, idx) => (
-              <div key={idx} className="flex justify-end">
-                <div className="bg-blue-500 text-white px-4 py-2 rounded-lg max-w-xs">
-                  <p className="text-sm">{msg}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <Transcript
+          messages={messages}
+          currentMessage={currentMessage}
+          currentUserMessage={currentUserMessage}
+        />
       </div>
 
       {/* Status Indicator Bar */}

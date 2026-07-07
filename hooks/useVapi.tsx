@@ -3,7 +3,7 @@ import {
   endVoiceSession,
 } from "@/lib/actions/session.actions";
 import { DEFAULT_VOICE, VOICE_SETTINGS } from "@/lib/constants";
-import { IBook } from "@/types";
+import { IBook, Messages } from "@/types";
 import Vapi from "@vapi-ai/web";
 import { useAuth } from "@clerk/nextjs";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -26,6 +26,68 @@ const useLatestRef = <T,>(value: T) => {
   return ref;
 };
 
+type TranscriptType = "partial" | "final";
+type TranscriptRole = Messages["role"];
+
+type VapiMessageEvent = {
+  type?: string;
+  role?: string;
+  transcriptType?: string;
+  transcript?: string;
+  transcription?: string;
+  message?: string;
+  content?: string;
+  text?: string;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const getMessageContent = (event: VapiMessageEvent) => {
+  const candidates = [
+    event.transcript,
+    event.transcription,
+    event.message,
+    event.content,
+    event.text,
+  ];
+
+  const content = candidates.find(
+    (candidate): candidate is string =>
+      typeof candidate === "string" && candidate.trim().length > 0,
+  );
+
+  return content?.trim() ?? "";
+};
+
+const getTranscriptType = (event: VapiMessageEvent): TranscriptType | null => {
+  if (event.transcriptType === "partial" || event.transcriptType === "final") {
+    return event.transcriptType;
+  }
+
+  if (event.type === "user-transcription" || event.type === "assistant-message") {
+    return "final";
+  }
+
+  return null;
+};
+
+const getTranscriptRole = (event: VapiMessageEvent): TranscriptRole | null => {
+  if (event.role === "user" || event.role === "assistant") {
+    return event.role;
+  }
+
+  if (event.type === "user-transcription") {
+    return "user";
+  }
+
+  if (event.type === "assistant-message") {
+    return "assistant";
+  }
+
+  return null;
+};
+
 /**
  * Factory to create isolated Vapi instances per hook.
  * Prevents conflicts between concurrent sessions.
@@ -44,9 +106,9 @@ export const useVapi = (book: IBook) => {
 
   // State management
   const [status, setStatus] = useState<CallStatus>("idle");
-  const [message, setMessage] = useState<string>("");
+  const [messages, setMessages] = useState<Messages[]>([]);
   const [currentMessage, setCurrentMessage] = useState<string>("");
-  const [currentUserMessages, setCurrentUserMessages] = useState<string[]>([]);
+  const [currentUserMessage, setCurrentUserMessage] = useState<string>("");
   const [duration, setDuration] = useState<number>(0);
   const [limitError, setLimitError] = useState<string | null>(null);
 
@@ -70,6 +132,31 @@ export const useVapi = (book: IBook) => {
     status === "starting";
   const ASSISTANT_ID = process.env.NEXT_PUBLIC_ASSISTANT_ID || "";
   const memoizedAssistantId = ASSISTANT_ID;
+
+  const appendFinalMessage = useCallback(
+    (role: TranscriptRole, content: string) => {
+      const nextContent = content.trim();
+
+      if (!nextContent) {
+        return;
+      }
+
+      setMessages((prev) => {
+        const lastMessage = prev[prev.length - 1];
+
+        if (
+          lastMessage &&
+          lastMessage.role === role &&
+          lastMessage.content === nextContent
+        ) {
+          return prev;
+        }
+
+        return [...prev, { role, content: nextContent }];
+      });
+    },
+    [],
+  );
 
   /**
    * Register an event listener and track it for cleanup
@@ -175,15 +262,38 @@ export const useVapi = (book: IBook) => {
 
       // Message event: user speech recognized
       registerListener(vapi, "message", (messageData) => {
-        if (!messageData) return;
-        const message = messageData as Record<string, unknown>;
-        if (message.type === "user-transcription") {
-          const transcription = String(message.transcription || "");
-          setCurrentMessage(transcription);
-          setCurrentUserMessages((prev) => [...prev, transcription]);
-        } else if (message.type === "assistant-message") {
-          const assistantMessage = String(message.message || "");
-          setMessage(assistantMessage);
+        if (!isRecord(messageData)) return;
+
+        const event = messageData as VapiMessageEvent;
+        const role = getTranscriptRole(event);
+        const transcriptType = getTranscriptType(event);
+        const content = getMessageContent(event);
+
+        if (!role || !transcriptType || !content) {
+          return;
+        }
+
+        if (role === "user" && transcriptType === "partial") {
+          setCurrentUserMessage(content);
+          return;
+        }
+
+        if (role === "assistant" && transcriptType === "partial") {
+          setCurrentMessage(content);
+          return;
+        }
+
+        if (role === "user" && transcriptType === "final") {
+          setCurrentUserMessage("");
+          setStatus("thinking");
+          appendFinalMessage(role, content);
+          return;
+        }
+
+        if (role === "assistant" && transcriptType === "final") {
+          setCurrentMessage("");
+          setStatus("listening");
+          appendFinalMessage(role, content);
         }
       });
 
@@ -274,9 +384,9 @@ export const useVapi = (book: IBook) => {
     setLimitError(null);
     setStatus("connecting");
     setDuration(0);
-    setCurrentUserMessages([]);
+    setMessages([]);
     setCurrentMessage("");
-    setMessage("");
+    setCurrentUserMessage("");
 
     try {
       // Create isolated Vapi instance for this session
@@ -295,6 +405,11 @@ export const useVapi = (book: IBook) => {
         );
         if (result.success) {
           sessionIdRef.current = result.sessionId;
+        } else {
+          setLimitError(
+            result.error ||
+              "Unable to initialize a conversation session. Please try again.",
+          );
         }
       } catch (error) {
         console.error("Error creating voice session record:", error);
@@ -402,9 +517,9 @@ export const useVapi = (book: IBook) => {
 
   return {
     status,
-    message,
+    messages,
     currentMessage,
-    currentUserMessages,
+    currentUserMessage,
     duration,
     limitError,
     isActive,

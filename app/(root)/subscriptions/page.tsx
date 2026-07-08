@@ -76,41 +76,43 @@ export default function SubscriptionsPage() {
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {planHighlights.map(({ label, description, icon: Icon, path, features }) => {
-            const isActive = plan === path;
+          {planHighlights.map(
+            ({ label, description, icon: Icon, path, features }) => {
+              const isActive = plan === path;
 
-            return (
-              <article
-                key={label}
-                className={`rounded-[24px] border p-5 transition-all ${isActive ? "border-[rgba(33,42,59,0.24)] bg-white shadow-soft-md" : "border-[rgba(33,42,59,0.1)] bg-[rgba(255,255,255,0.72)] shadow-soft-sm"}`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent-light)] text-[var(--accent-warm)]">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
+              return (
+                <article
+                  key={label}
+                  className={`rounded-[24px] border p-5 transition-all ${isActive ? "border-[rgba(33,42,59,0.24)] bg-white shadow-soft-md" : "border-[rgba(33,42,59,0.1)] bg-[rgba(255,255,255,0.72)] shadow-soft-sm"}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent-light)] text-[var(--accent-warm)]">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    {isActive ? (
+                      <span className="rounded-full bg-[var(--accent-warm)] px-3 py-1 text-xs font-semibold text-white">
+                        Current
+                      </span>
+                    ) : null}
                   </div>
-                  {isActive ? (
-                    <span className="rounded-full bg-[var(--accent-warm)] px-3 py-1 text-xs font-semibold text-white">
-                      Current
-                    </span>
-                  ) : null}
-                </div>
-                <h2 className="mt-4 text-xl font-semibold text-[var(--text-primary)]">
-                  {label}
-                </h2>
-                <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                  {description}
-                </p>
-                <ul className="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">
-                  {features?.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2">
-                      <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[var(--accent-warm)]" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            );
-          })}
+                  <h2 className="mt-4 text-xl font-semibold text-[var(--text-primary)]">
+                    {label}
+                  </h2>
+                  <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                    {description}
+                  </p>
+                  <ul className="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">
+                    {features?.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2">
+                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[var(--accent-warm)]" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              );
+            },
+          )}
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-4">

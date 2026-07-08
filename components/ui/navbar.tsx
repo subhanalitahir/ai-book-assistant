@@ -61,7 +61,7 @@ const Navbar = () => {
               <Show when="signed-in">
                 <UserButton />
                 {user?.firstName && (
-                  <Link href={"/subscription"} className="nav-user-name">
+                  <Link href={"/subscriptions"} className="nav-user-name">
                     {user.firstName}
                   </Link>
                 )}

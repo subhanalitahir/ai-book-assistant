@@ -11,6 +11,7 @@ import {
 import Book from "@/database/models/book.model";
 import BookSegment from "@/database/models/bookSegment.model";
 import { put } from "@vercel/blob";
+import { getCurrentSubscriptionAccess } from "../subscription-access.server";
 
 export const getAllBooks = async (clerkId: string) => {
   try {
@@ -54,6 +55,12 @@ export const getBookBySlug = async (slug: string) => {
 export const createBook = async (data: CreateBook) => {
   try {
     await connectToDatabase();
+    const { userId, plan, limits } = await getCurrentSubscriptionAccess();
+
+    if (!userId || userId !== data.clerkId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     const slug = generateSlug(data.title);
     const existingBook = await Book.findOne({ slug }).lean();
     if (existingBook) {
@@ -63,7 +70,17 @@ export const createBook = async (data: CreateBook) => {
         alreadyExists: true,
       };
     }
-    // Check Subscription limit before creating a new book
+
+    const bookCount = await Book.countDocuments({ clerkId: data.clerkId });
+    if (bookCount >= limits.maxBooks) {
+      return {
+        success: false,
+        error: `Your ${plan} plan allows up to ${limits.maxBooks} book${
+          limits.maxBooks === 1 ? "" : "s"
+        }. Upgrade your subscription to add more books.`,
+      };
+    }
+
     const book = await Book.create({ ...data, slug, totalSegments: 0 });
     return {
       success: true,
@@ -99,6 +116,21 @@ export const createBookWithSegments = async (
           segments: [],
         },
         alreadyExists: true,
+      };
+    }
+
+    const { userId, plan, limits } = await getCurrentSubscriptionAccess();
+    if (!userId || userId !== data.clerkId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const bookCount = await Book.countDocuments({ clerkId: data.clerkId });
+    if (bookCount >= limits.maxBooks) {
+      return {
+        success: false,
+        error: `Your ${plan} plan allows up to ${limits.maxBooks} book${
+          limits.maxBooks === 1 ? "" : "s"
+        }. Upgrade your subscription to add more books.`,
       };
     }
 

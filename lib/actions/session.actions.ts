@@ -1,7 +1,11 @@
 "use server";
 import { connectToDatabase } from "@/database/mongoose";
 import VoiceSession from "@/database/models/voiceSession.model";
-import { getCurrentBillingPeriodStart } from "../subscription-constants";
+import {
+  getCurrentBillingPeriodRange,
+  getCurrentBillingPeriodStart,
+} from "../subscription-constants";
+import { getCurrentSubscriptionAccess } from "../subscription-access.server";
 
 type StartSessionResult =
   | { success: true; sessionId: string }
@@ -15,7 +19,30 @@ export const startVoiceSession = async (
 ): Promise<StartSessionResult> => {
   try {
     await connectToDatabase();
-    // limits to see whether a session is allowed or not
+    const { userId, plan, limits } = await getCurrentSubscriptionAccess();
+
+    if (!userId || userId !== clerkId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const { start, end } = getCurrentBillingPeriodRange();
+    const monthlySessionCount = await VoiceSession.countDocuments({
+      clerkId,
+      billingPeriodStart: {
+        $gte: start,
+        $lt: end,
+      },
+    });
+
+    if (monthlySessionCount >= limits.maxSessionsPerMonth) {
+      return {
+        success: false,
+        error: `Your ${plan} plan allows ${limits.maxSessionsPerMonth} session${
+          limits.maxSessionsPerMonth === 1 ? "" : "s"
+        } per month. Upgrade your subscription to start another session.`,
+      };
+    }
+
     const session = await VoiceSession.create({
       clerkId,
       bookId,

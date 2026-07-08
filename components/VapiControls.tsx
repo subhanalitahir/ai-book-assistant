@@ -1,5 +1,6 @@
 "use client";
 import useVapi from "@/hooks/useVapi";
+import { useSubscriptionPlan } from "@/hooks/useSubscriptionPlan";
 import { IBook } from "@/types";
 import { Mic, MicOff, AlertCircle, Loader } from "lucide-react";
 import Image from "next/image";
@@ -20,6 +21,7 @@ const VapiControls = ({ book }: { book: IBook }) => {
     stop,
     clearErrors,
   } = useVapi(book);
+  const { limits } = useSubscriptionPlan();
 
   const displayedDuration = useMemo(() => formatDuration(duration), [duration]);
 
@@ -128,7 +130,7 @@ const VapiControls = ({ book }: { book: IBook }) => {
 
             {/* Timer Badge */}
             <div className="px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-800">
-              {displayedDuration}/15:00
+              {displayedDuration}/{limits.maxMinutesPerSession}:00
             </div>
           </div>
         </div>
